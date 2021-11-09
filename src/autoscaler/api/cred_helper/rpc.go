@@ -1,7 +1,8 @@
 package cred_helper
 
 import (
-	"autoscaler/metricsforwarder/config"
+	"autoscaler/db"
+	"autoscaler/helpers"
 	"autoscaler/models"
 	"net/rpc"
 )
@@ -9,10 +10,6 @@ import (
 // Here is an implementation that talks over RPC
 type CredentialsRPC struct {
 	client *rpc.Client
-}
-
-func (g *CredentialsRPC) InitializeConfig(config config.DbConfig) error {
-	panic("implement me")
 }
 
 func (g *CredentialsRPC) Create(appId string, userProvidedCredential *models.Credential) (*models.Credential, error) {
@@ -47,6 +44,16 @@ func (g *CredentialsRPC) Get(appId string) (*models.Credential, error) {
 	return nil, nil
 }
 
+func (g *CredentialsRPC) InitializeConfig(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) error {
+	var resp string
+	err := g.client.Call("Plugin.InitializeConfig", new(interface{}), &resp)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 var _ Credentials = &CredentialsRPC{}
 
 type CredentialsRPCServer struct {
@@ -64,6 +71,10 @@ func (s *CredentialsRPCServer) Delete(appId string) error {
 
 func (s *CredentialsRPCServer) Get(appId string) (*models.Credential, error) {
 	return s.Impl.Get(appId)
+}
+
+func (s *CredentialsRPCServer) InitializeConfig(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) error {
+	return s.Impl.InitializeConfig(dbConfig, loggingConfig)
 }
 
 var _ Credentials = &CredentialsRPCServer{}

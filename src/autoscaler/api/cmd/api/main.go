@@ -63,9 +63,9 @@ func main() {
 	members := grouper.Members{}
 
 	var policyDb db.PolicyDB
-	policyDb, err = sqldb.NewPolicySQLDB(conf.DB.PolicyDB, logger.Session("policydb-db"))
+	policyDb, err = sqldb.NewPolicySQLDB(conf.DB["policy_db"], logger.Session("policydb-db"))
 	if err != nil {
-		logger.Error("failed to connect to policydb database", err, lager.Data{"dbConfig": conf.DB.PolicyDB})
+		logger.Error("failed to connect to policydb database", err, lager.Data{"dbConfig": conf.DB["policy_db"]})
 		os.Exit(1)
 	}
 	defer policyDb.Close()
@@ -84,19 +84,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	// FIXME load this as a plugin
-	credentials, err := loadCredentialPlugin(conf.DB)
+	credentials, err := loadCredentialPlugin(conf.DB, conf.Logging)
 	if err != nil {
-		logger.Error("failed to connect policy database", err, lager.Data{"dbConfig": conf.DB.PolicyDB})
+		logger.Error("failed to load credential plugin", err)
 		os.Exit(1)
 	}
 	var checkBindingFunc api.CheckBindingFunc
 	var bindingDB db.BindingDB
 
 	if !conf.UseBuildInMode {
-		bindingDB, err = sqldb.NewBindingSQLDB(conf.DB.BindingDB, logger.Session("bindingdb-db"))
+		bindingDB, err = sqldb.NewBindingSQLDB(conf.DB["binding_db"], logger.Session("bindingdb-db"))
 		if err != nil {
-			logger.Error("failed to connect bindingdb database", err, lager.Data{"dbConfig": conf.DB.BindingDB})
+			logger.Error("failed to connect bindingdb database", err, lager.Data{"dbConfig": conf.DB["binding_db"]})
 			os.Exit(1)
 		}
 		defer bindingDB.Close()
@@ -151,10 +150,7 @@ func main() {
 	logger.Info("exited")
 }
 
-func loadCredentialPlugin(dbconfig config.DBConfig) (cred_helper.Credentials, error) {
-	// FIXME
-	//custom_metrics_cred_helper_plugin.New(conf.DB.PolicyDB, logger.Session("policydb-db"), cred_helper.MaxRetry)
-
+func loadCredentialPlugin(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) (cred_helper.Credentials, error) {
 	// Create an hclog.Logger
 	logger := hclog.New(&hclog.LoggerOptions{
 		Name:   "Plugin",
@@ -166,7 +162,7 @@ func loadCredentialPlugin(dbconfig config.DBConfig) (cred_helper.Credentials, er
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: cred_helper.HandshakeConfig,
 		Plugins:         pluginMap,
-		Cmd:             exec.Command("../cred_helper/customMetricsCredHelper"),
+		Cmd:             exec.Command("/Users/C5326931/SAPDevelop/app-autoscaler/src/autoscaler/build/custom-metrics-cred-helper-plugin"),
 		Logger:          logger,
 	})
 	defer client.Kill()
@@ -178,20 +174,21 @@ func loadCredentialPlugin(dbconfig config.DBConfig) (cred_helper.Credentials, er
 		return nil, fmt.Errorf("failed to create rpcClient %w", err)
 	}
 	// Request the plugin
-	raw, err := rpcClient.Dispense("customMetricsCredHelper")
+	raw, err := rpcClient.Dispense("credHelper")
 	if err != nil {
 		return nil, fmt.Errorf("failed to dispense plugin %w", err)
 	}
 	// We should have a customMetricsCredHelper now! This feels like a normal interface
 	// implementation but is in fact over an RPC connection.
 	credentials := raw.(cred_helper.Credentials)
-	//FIXME
-	//credentials.InitializeConfig(dbconfig)
-
+	err = credentials.InitializeConfig(dbConfig, loggingConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize plugin %w", err)
+	}
 	return credentials, nil
 }
 
 // pluginMap is the map of plugins we can dispense.
 var pluginMap = map[string]plugin.Plugin{
-	"customMetricsCredHelper": &cred_helper.CredentialsPlugin{},
+	"credHelper": &cred_helper.CredentialsPlugin{},
 }

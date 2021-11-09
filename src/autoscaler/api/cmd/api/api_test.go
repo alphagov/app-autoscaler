@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"autoscaler/api/config"
+	"autoscaler/db"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -70,8 +71,8 @@ var _ = Describe("Api", func() {
 				runner.startCheck = ""
 				missingConfig := cfg
 
-				missingConfig.DB.PolicyDB.URL = ""
-				missingConfig.DB.BindingDB.URL = ""
+				missingConfig.DB["policy_db"] = db.DatabaseConfig{URL: ""}
+				missingConfig.DB["binding_db"] = db.DatabaseConfig{URL: ""}
 
 				var brokerCreds []config.BrokerCredentialsConfig
 				missingConfig.BrokerCredentials = brokerCreds

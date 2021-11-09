@@ -1,4 +1,4 @@
-package custom_metrics_cred_helper_plugin_test
+package internal_test
 
 import (
 	. "github.com/onsi/ginkgo"

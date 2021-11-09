@@ -1,6 +1,8 @@
 package cred_helper
 
 import (
+	"autoscaler/db"
+	"autoscaler/helpers"
 	"autoscaler/models"
 )
 
@@ -12,7 +14,5 @@ type Credentials interface {
 	Create(appId string, userProvidedCredential *models.Credential) (*models.Credential, error)
 	Delete(appId string) error
 	Get(appId string) (*models.Credential, error)
-	// FIXME
-	// InitializeConfig(config config.) error
-
+	InitializeConfig(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) error
 }

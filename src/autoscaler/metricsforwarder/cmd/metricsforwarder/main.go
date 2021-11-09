@@ -2,7 +2,6 @@ package main
 
 import (
 	"autoscaler/api/cred_helper"
-	"autoscaler/custom_metrics_cred_helper_plugin"
 	"autoscaler/db"
 	"autoscaler/db/sqldb"
 	"autoscaler/healthendpoint"
@@ -13,6 +12,10 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
+
+	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/go-plugin"
 
 	"code.cloudfoundry.org/clock"
 	"code.cloudfoundry.org/lager"
@@ -57,17 +60,17 @@ func main() {
 	mfClock := clock.NewClock()
 
 	var policyDB db.PolicyDB
-	policyDB, err = sqldb.NewPolicySQLDB(conf.Db.PolicyDb, logger.Session("policy-db"))
+	policyDB, err = sqldb.NewPolicySQLDB(conf.Db["policy_db"], logger.Session("policy-db"))
 	if err != nil {
-		logger.Error("failed-to-connect-policy-database", err, lager.Data{"dbConfig": conf.Db.PolicyDb})
+		logger.Error("failed-to-connect-policy-database", err, lager.Data{"dbConfig": conf.Db["policy_db"]})
 		os.Exit(1)
 	}
 	defer policyDB.Close()
 
 	// FIXME load this as a plugin
-	credentials, err := custom_metrics_cred_helper_plugin.New(conf.Db.PolicyDb, logger.Session("policy-db"), cred_helper.MaxRetry)
+	credentials, err := loadCredentialPlugin(conf.Db, conf.Logging)
 	if err != nil {
-		logger.Error("failed-to-connect-policy-database", err, lager.Data{"dbConfig": conf.Db.PolicyDb})
+		logger.Error("failed-to-connect-policy-database", err, lager.Data{"dbConfig": conf.Db["policy_db"]})
 		os.Exit(1)
 	}
 	httpStatusCollector := healthendpoint.NewHTTPStatusCollector("autoscaler", "metricsforwarder")
@@ -121,4 +124,47 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("exited")
+}
+
+func loadCredentialPlugin(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) (cred_helper.Credentials, error) {
+	// Create an hclog.Logger
+	logger := hclog.New(&hclog.LoggerOptions{
+		Name:   "Plugin",
+		Output: os.Stdout,
+		Level:  hclog.Debug,
+	})
+
+	// We're a host! Start by launching the plugin process.
+	client := plugin.NewClient(&plugin.ClientConfig{
+		HandshakeConfig: cred_helper.HandshakeConfig,
+		Plugins:         pluginMap,
+		Cmd:             exec.Command("./src/autoscaler/build/custom-metrics-cred-helper-plugin"),
+		Logger:          logger,
+	})
+	defer client.Kill()
+
+	// Connect via RPC
+	rpcClient, err := client.Client()
+	if err != nil {
+		logger.Error("failed to create rpcClient", err)
+		return nil, fmt.Errorf("failed to create rpcClient %w", err)
+	}
+	// Request the plugin
+	raw, err := rpcClient.Dispense("credHelper")
+	if err != nil {
+		return nil, fmt.Errorf("failed to dispense plugin %w", err)
+	}
+	// We should have a customMetricsCredHelper now! This feels like a normal interface
+	// implementation but is in fact over an RPC connection.
+	credentials := raw.(cred_helper.Credentials)
+	err = credentials.InitializeConfig(dbConfig, loggingConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize plugin %w", err)
+	}
+	return credentials, nil
+}
+
+// pluginMap is the map of plugins we can dispense.
+var pluginMap = map[string]plugin.Plugin{
+	"credHelper": &cred_helper.CredentialsPlugin{},
 }
