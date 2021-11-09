@@ -7,7 +7,6 @@ import (
 	"net/rpc"
 )
 
-// Here is an implementation that talks over RPC
 type CredentialsRPC struct {
 	client *rpc.Client
 }
@@ -57,7 +56,6 @@ func (g *CredentialsRPC) InitializeConfig(dbConfig map[string]db.DatabaseConfig,
 var _ Credentials = &CredentialsRPC{}
 
 type CredentialsRPCServer struct {
-	// This is the real implementation
 	Impl Credentials
 }
 
