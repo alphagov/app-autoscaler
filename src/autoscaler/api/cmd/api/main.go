@@ -162,7 +162,7 @@ func loadCredentialPlugin(dbConfig map[string]db.DatabaseConfig, loggingConfig h
 	client := plugin.NewClient(&plugin.ClientConfig{
 		HandshakeConfig: cred_helper.HandshakeConfig,
 		Plugins:         pluginMap,
-		Cmd:             exec.Command("/Users/C5326931/SAPDevelop/app-autoscaler/src/autoscaler/build/custom-metrics-cred-helper-plugin"),
+		Cmd:             exec.Command("../../../build/custom-metrics-cred-helper-plugin"),
 		Logger:          logger,
 	})
 	defer client.Kill()
