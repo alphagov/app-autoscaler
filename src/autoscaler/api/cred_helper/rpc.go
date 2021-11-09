@@ -1,8 +1,6 @@
 package cred_helper
 
 import (
-	"autoscaler/db"
-	"autoscaler/helpers"
 	"autoscaler/models"
 	"net/rpc"
 )
@@ -12,21 +10,19 @@ type CredentialsRPC struct {
 	client *rpc.Client
 }
 
-func (g *CredentialsRPC) Create(appId string, userProvidedCredential *models.Credential) (*models.Credential, error) {
-	var resp string
-	err := g.client.Call("Plugin.Create", new(interface{}), &resp)
+func (g *CredentialsRPC) Create(args CreateArgs, reply *models.Credential) error {
+	err := g.client.Call("Plugin.Create", args, &reply)
 	if err != nil {
 		// You usually want your interfaces to return errors. If they don't,
 		// there isn't much other choice here.
 		panic(err)
 	}
 
-	return nil, nil
+	return nil
 }
 
-func (g *CredentialsRPC) Delete(appId string) error {
-	var resp string
-	err := g.client.Call("Plugin.Delete", new(interface{}), &resp)
+func (g *CredentialsRPC) Delete(appId string, reply *interface{}) error {
+	err := g.client.Call("Plugin.Delete", appId, &reply)
 	if err != nil {
 		return err
 	}
@@ -34,19 +30,17 @@ func (g *CredentialsRPC) Delete(appId string) error {
 	return nil
 }
 
-func (g *CredentialsRPC) Get(appId string) (*models.Credential, error) {
-	var resp string
-	err := g.client.Call("Plugin.Get", new(interface{}), &resp)
+func (g *CredentialsRPC) Get(appId string, reply *models.Credential) error {
+	err := g.client.Call("Plugin.Get", appId, &reply)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return nil, nil
+	return nil
 }
 
-func (g *CredentialsRPC) InitializeConfig(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) error {
-	var resp string
-	err := g.client.Call("Plugin.InitializeConfig", new(interface{}), &resp)
+func (g *CredentialsRPC) InitializeConfig(args InitializeConfigArgs, reply *interface{}) error {
+	err := g.client.Call("Plugin.InitializeConfig", args, &reply)
 	if err != nil {
 		return err
 	}
@@ -61,20 +55,20 @@ type CredentialsRPCServer struct {
 	Impl Credentials
 }
 
-func (s *CredentialsRPCServer) Create(appId string, userProvidedCredential *models.Credential) (*models.Credential, error) {
-	return s.Impl.Create(appId, userProvidedCredential)
+func (s *CredentialsRPCServer) Create(args CreateArgs, reply *models.Credential) error {
+	return s.Impl.Create(args, reply)
 }
 
-func (s *CredentialsRPCServer) Delete(appId string) error {
-	return s.Impl.Delete(appId)
+func (s *CredentialsRPCServer) Delete(appId string, reply *interface{}) error {
+	return s.Impl.Delete(appId, reply)
 }
 
-func (s *CredentialsRPCServer) Get(appId string) (*models.Credential, error) {
-	return s.Impl.Get(appId)
+func (s *CredentialsRPCServer) Get(appId string, reply *models.Credential) error {
+	return s.Impl.Get(appId, reply)
 }
 
-func (s *CredentialsRPCServer) InitializeConfig(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) error {
-	return s.Impl.InitializeConfig(dbConfig, loggingConfig)
+func (s *CredentialsRPCServer) InitializeConfig(args InitializeConfigArgs, reply *interface{}) error {
+	return s.Impl.InitializeConfig(args, reply)
 }
 
 var _ Credentials = &CredentialsRPCServer{}

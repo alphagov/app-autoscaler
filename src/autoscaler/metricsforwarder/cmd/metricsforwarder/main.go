@@ -157,7 +157,7 @@ func loadCredentialPlugin(dbConfig map[string]db.DatabaseConfig, loggingConfig h
 	// We should have a customMetricsCredHelper now! This feels like a normal interface
 	// implementation but is in fact over an RPC connection.
 	credentials := raw.(cred_helper.Credentials)
-	err = credentials.InitializeConfig(dbConfig, loggingConfig)
+	err = credentials.InitializeConfig(cred_helper.InitializeConfigArgs{DbConfig: dbConfig, LoggingConfig: loggingConfig}, new(interface{}))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize plugin %w", err)
 	}

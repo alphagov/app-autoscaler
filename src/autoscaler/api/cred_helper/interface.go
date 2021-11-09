@@ -11,8 +11,18 @@ const (
 )
 
 type Credentials interface {
-	Create(appId string, userProvidedCredential *models.Credential) (*models.Credential, error)
-	Delete(appId string) error
-	Get(appId string) (*models.Credential, error)
-	InitializeConfig(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) error
+	Create(args CreateArgs, reply *models.Credential) error
+	Delete(appId string, reply *interface{}) error
+	Get(appId string, reply *models.Credential) error
+	InitializeConfig(args InitializeConfigArgs, reply *interface{}) error
+}
+
+type CreateArgs struct {
+	AppId                  string
+	UserProvidedCredential *models.Credential
+}
+
+type InitializeConfigArgs struct {
+	DbConfig      map[string]db.DatabaseConfig
+	LoggingConfig helpers.LoggingConfig
 }

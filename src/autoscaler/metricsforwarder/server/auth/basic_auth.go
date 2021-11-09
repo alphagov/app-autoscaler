@@ -31,7 +31,8 @@ func (a *Auth) BasicAuth(r *http.Request, appID string) error {
 	// stale cache entry with invalid credential found in cache
 	// search in the database and update the cache
 	if !found || !isValid {
-		credentials, err := a.credentials.Get(appID)
+		credentials := models.Credential{}
+		err := a.credentials.Get(appID, &credentials)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				a.logger.Error("no-credential-found-in-db", err, lager.Data{"appID": appID})

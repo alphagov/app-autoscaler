@@ -3,31 +3,28 @@ package fakes
 
 import (
 	"autoscaler/api/cred_helper"
-	"autoscaler/db"
-	"autoscaler/helpers"
 	"autoscaler/models"
 	"sync"
 )
 
 type FakeCredentials struct {
-	CreateStub        func(string, *models.Credential) (*models.Credential, error)
+	CreateStub        func(cred_helper.CreateArgs, *models.Credential) error
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
-		arg1 string
+		arg1 cred_helper.CreateArgs
 		arg2 *models.Credential
 	}
 	createReturns struct {
-		result1 *models.Credential
-		result2 error
+		result1 error
 	}
 	createReturnsOnCall map[int]struct {
-		result1 *models.Credential
-		result2 error
+		result1 error
 	}
-	DeleteStub        func(string) error
+	DeleteStub        func(string, *interface{}) error
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
 		arg1 string
+		arg2 *interface{}
 	}
 	deleteReturns struct {
 		result1 error
@@ -35,24 +32,23 @@ type FakeCredentials struct {
 	deleteReturnsOnCall map[int]struct {
 		result1 error
 	}
-	GetStub        func(string) (*models.Credential, error)
+	GetStub        func(string, *models.Credential) error
 	getMutex       sync.RWMutex
 	getArgsForCall []struct {
 		arg1 string
+		arg2 *models.Credential
 	}
 	getReturns struct {
-		result1 *models.Credential
-		result2 error
+		result1 error
 	}
 	getReturnsOnCall map[int]struct {
-		result1 *models.Credential
-		result2 error
+		result1 error
 	}
-	InitializeConfigStub        func(map[string]db.DatabaseConfig, helpers.LoggingConfig) error
+	InitializeConfigStub        func(cred_helper.InitializeConfigArgs, *interface{}) error
 	initializeConfigMutex       sync.RWMutex
 	initializeConfigArgsForCall []struct {
-		arg1 map[string]db.DatabaseConfig
-		arg2 helpers.LoggingConfig
+		arg1 cred_helper.InitializeConfigArgs
+		arg2 *interface{}
 	}
 	initializeConfigReturns struct {
 		result1 error
@@ -64,11 +60,11 @@ type FakeCredentials struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCredentials) Create(arg1 string, arg2 *models.Credential) (*models.Credential, error) {
+func (fake *FakeCredentials) Create(arg1 cred_helper.CreateArgs, arg2 *models.Credential) error {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
-		arg1 string
+		arg1 cred_helper.CreateArgs
 		arg2 *models.Credential
 	}{arg1, arg2})
 	stub := fake.CreateStub
@@ -79,9 +75,9 @@ func (fake *FakeCredentials) Create(arg1 string, arg2 *models.Credential) (*mode
 		return stub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fakeReturns.result1, fakeReturns.result2
+	return fakeReturns.result1
 }
 
 func (fake *FakeCredentials) CreateCallCount() int {
@@ -90,57 +86,55 @@ func (fake *FakeCredentials) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeCredentials) CreateCalls(stub func(string, *models.Credential) (*models.Credential, error)) {
+func (fake *FakeCredentials) CreateCalls(stub func(cred_helper.CreateArgs, *models.Credential) error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeCredentials) CreateArgsForCall(i int) (string, *models.Credential) {
+func (fake *FakeCredentials) CreateArgsForCall(i int) (cred_helper.CreateArgs, *models.Credential) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCredentials) CreateReturns(result1 *models.Credential, result2 error) {
+func (fake *FakeCredentials) CreateReturns(result1 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	fake.createReturns = struct {
-		result1 *models.Credential
-		result2 error
-	}{result1, result2}
+		result1 error
+	}{result1}
 }
 
-func (fake *FakeCredentials) CreateReturnsOnCall(i int, result1 *models.Credential, result2 error) {
+func (fake *FakeCredentials) CreateReturnsOnCall(i int, result1 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	if fake.createReturnsOnCall == nil {
 		fake.createReturnsOnCall = make(map[int]struct {
-			result1 *models.Credential
-			result2 error
+			result1 error
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 *models.Credential
-		result2 error
-	}{result1, result2}
+		result1 error
+	}{result1}
 }
 
-func (fake *FakeCredentials) Delete(arg1 string) error {
+func (fake *FakeCredentials) Delete(arg1 string, arg2 *interface{}) error {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
 		arg1 string
-	}{arg1})
+		arg2 *interface{}
+	}{arg1, arg2})
 	stub := fake.DeleteStub
 	fakeReturns := fake.deleteReturns
-	fake.recordInvocation("Delete", []interface{}{arg1})
+	fake.recordInvocation("Delete", []interface{}{arg1, arg2})
 	fake.deleteMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -154,17 +148,17 @@ func (fake *FakeCredentials) DeleteCallCount() int {
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *FakeCredentials) DeleteCalls(stub func(string) error) {
+func (fake *FakeCredentials) DeleteCalls(stub func(string, *interface{}) error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = stub
 }
 
-func (fake *FakeCredentials) DeleteArgsForCall(i int) string {
+func (fake *FakeCredentials) DeleteArgsForCall(i int) (string, *interface{}) {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	argsForCall := fake.deleteArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *FakeCredentials) DeleteReturns(result1 error) {
@@ -190,23 +184,24 @@ func (fake *FakeCredentials) DeleteReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *FakeCredentials) Get(arg1 string) (*models.Credential, error) {
+func (fake *FakeCredentials) Get(arg1 string, arg2 *models.Credential) error {
 	fake.getMutex.Lock()
 	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
 	fake.getArgsForCall = append(fake.getArgsForCall, struct {
 		arg1 string
-	}{arg1})
+		arg2 *models.Credential
+	}{arg1, arg2})
 	stub := fake.GetStub
 	fakeReturns := fake.getReturns
-	fake.recordInvocation("Get", []interface{}{arg1})
+	fake.recordInvocation("Get", []interface{}{arg1, arg2})
 	fake.getMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
-		return ret.result1, ret.result2
+		return ret.result1
 	}
-	return fakeReturns.result1, fakeReturns.result2
+	return fakeReturns.result1
 }
 
 func (fake *FakeCredentials) GetCallCount() int {
@@ -215,51 +210,48 @@ func (fake *FakeCredentials) GetCallCount() int {
 	return len(fake.getArgsForCall)
 }
 
-func (fake *FakeCredentials) GetCalls(stub func(string) (*models.Credential, error)) {
+func (fake *FakeCredentials) GetCalls(stub func(string, *models.Credential) error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = stub
 }
 
-func (fake *FakeCredentials) GetArgsForCall(i int) string {
+func (fake *FakeCredentials) GetArgsForCall(i int) (string, *models.Credential) {
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
 	argsForCall := fake.getArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *FakeCredentials) GetReturns(result1 *models.Credential, result2 error) {
+func (fake *FakeCredentials) GetReturns(result1 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
 	fake.getReturns = struct {
-		result1 *models.Credential
-		result2 error
-	}{result1, result2}
+		result1 error
+	}{result1}
 }
 
-func (fake *FakeCredentials) GetReturnsOnCall(i int, result1 *models.Credential, result2 error) {
+func (fake *FakeCredentials) GetReturnsOnCall(i int, result1 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
 	if fake.getReturnsOnCall == nil {
 		fake.getReturnsOnCall = make(map[int]struct {
-			result1 *models.Credential
-			result2 error
+			result1 error
 		})
 	}
 	fake.getReturnsOnCall[i] = struct {
-		result1 *models.Credential
-		result2 error
-	}{result1, result2}
+		result1 error
+	}{result1}
 }
 
-func (fake *FakeCredentials) InitializeConfig(arg1 map[string]db.DatabaseConfig, arg2 helpers.LoggingConfig) error {
+func (fake *FakeCredentials) InitializeConfig(arg1 cred_helper.InitializeConfigArgs, arg2 *interface{}) error {
 	fake.initializeConfigMutex.Lock()
 	ret, specificReturn := fake.initializeConfigReturnsOnCall[len(fake.initializeConfigArgsForCall)]
 	fake.initializeConfigArgsForCall = append(fake.initializeConfigArgsForCall, struct {
-		arg1 map[string]db.DatabaseConfig
-		arg2 helpers.LoggingConfig
+		arg1 cred_helper.InitializeConfigArgs
+		arg2 *interface{}
 	}{arg1, arg2})
 	stub := fake.InitializeConfigStub
 	fakeReturns := fake.initializeConfigReturns
@@ -280,13 +272,13 @@ func (fake *FakeCredentials) InitializeConfigCallCount() int {
 	return len(fake.initializeConfigArgsForCall)
 }
 
-func (fake *FakeCredentials) InitializeConfigCalls(stub func(map[string]db.DatabaseConfig, helpers.LoggingConfig) error) {
+func (fake *FakeCredentials) InitializeConfigCalls(stub func(cred_helper.InitializeConfigArgs, *interface{}) error) {
 	fake.initializeConfigMutex.Lock()
 	defer fake.initializeConfigMutex.Unlock()
 	fake.InitializeConfigStub = stub
 }
 
-func (fake *FakeCredentials) InitializeConfigArgsForCall(i int) (map[string]db.DatabaseConfig, helpers.LoggingConfig) {
+func (fake *FakeCredentials) InitializeConfigArgsForCall(i int) (cred_helper.InitializeConfigArgs, *interface{}) {
 	fake.initializeConfigMutex.RLock()
 	defer fake.initializeConfigMutex.RUnlock()
 	argsForCall := fake.initializeConfigArgsForCall[i]

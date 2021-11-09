@@ -597,8 +597,8 @@ func (h *BrokerHandler) BindServiceInstance(w http.ResponseWriter, r *http.Reque
 		writeErrorResponse(w, http.StatusInternalServerError, "Error creating service binding")
 		return
 	}
-
-	cred, err := h.credentials.Create(body.AppID, nil)
+	cred := &models.Credential{}
+	err = h.credentials.Create(cred_helper.CreateArgs{AppId: body.AppID}, cred)
 	if err != nil {
 		//revert binding creating
 		h.logger.Error("failed to create custom metrics credential", err, lager.Data{"appId": body.AppID})
@@ -617,7 +617,7 @@ func (h *BrokerHandler) BindServiceInstance(w http.ResponseWriter, r *http.Reque
 		if err != nil {
 			h.logger.Error("failed to save policy", err, lager.Data{"appId": body.AppID, "policy": policyStr})
 			//failed to save policy, so revert creating binding and custom metrics credential
-			err = h.credentials.Delete(body.AppID)
+			err = h.credentials.Delete(body.AppID, new(interface{}))
 			if err != nil {
 				h.logger.Error("failed to revert custom metrics credential due to failed to save policy", err, lager.Data{"appId": body.AppID})
 			}
@@ -715,7 +715,7 @@ func deleteBinding(h *BrokerHandler, bindingId string, serviceInstanceId string)
 		return errorDeleteServiceBinding
 	}
 
-	err = h.credentials.Delete(appId)
+	err = h.credentials.Delete(appId, new(interface{}))
 	if err != nil {
 		h.logger.Error("failed to delete custom metrics credential for unbinding", err, lager.Data{"appId": appId})
 		return errorCredentialNotDeleted
