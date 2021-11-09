@@ -2,7 +2,8 @@ package brokerserver_test
 
 import (
 	. "autoscaler/api/brokerserver"
-	"autoscaler/api/custom_metrics_cred_helper"
+	"autoscaler/api/cred_helper"
+	"autoscaler/custom_metrics_cred_helper_plugin"
 	"autoscaler/db"
 	"autoscaler/fakes"
 	"autoscaler/models"
@@ -54,7 +55,7 @@ var _ = Describe("BrokerHandler", func() {
 				ID:   "a-plan-id",
 				Name: "standard",
 			}},
-		}}, fakecfClient, custom_metrics_cred_helper.NewWithPolicyDb(policydb, custom_metrics_cred_helper.MaxRetry))
+		}}, fakecfClient, custom_metrics_cred_helper_plugin.NewWithPolicyDb(policydb, cred_helper.MaxRetry))
 	})
 
 	Describe("GetBrokerCatalog", func() {

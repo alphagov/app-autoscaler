@@ -1,7 +1,8 @@
 package server_test
 
 import (
-	"autoscaler/api/custom_metrics_cred_helper"
+	"autoscaler/api/cred_helper"
+	"autoscaler/custom_metrics_cred_helper_plugin"
 	"autoscaler/fakes"
 	"autoscaler/helpers"
 	"autoscaler/metricsforwarder/config"
@@ -79,7 +80,7 @@ var _ = SynchronizedBeforeSuite(func() []byte {
 	rateLimiter = &fakes.FakeLimiter{}
 
 	httpServer, err := NewServer(lager.NewLogger("test"), conf, policyDB,
-		custom_metrics_cred_helper.NewWithPolicyDb(policyDB, custom_metrics_cred_helper.MaxRetry),
+		custom_metrics_cred_helper_plugin.NewWithPolicyDb(policyDB, cred_helper.MaxRetry),
 		credentialCache, allowedMetricCache, httpStatusCollector, rateLimiter)
 	Expect(err).NotTo(HaveOccurred())
 	serverUrl = fmt.Sprintf("http://127.0.0.1:%d", conf.Server.Port)

@@ -64,6 +64,7 @@ func main() {
 	}
 	defer policyDB.Close()
 
+	// FIXME load this as a plugin
 	credentials, err := custom_metrics_cred_helper_plugin.New(conf.Db.PolicyDb, logger.Session("policy-db"), cred_helper.MaxRetry)
 	if err != nil {
 		logger.Error("failed-to-connect-policy-database", err, lager.Data{"dbConfig": conf.Db.PolicyDb})

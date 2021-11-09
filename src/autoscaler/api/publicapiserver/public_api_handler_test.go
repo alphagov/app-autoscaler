@@ -1,8 +1,9 @@
 package publicapiserver_test
 
 import (
-	"autoscaler/api/custom_metrics_cred_helper"
+	"autoscaler/api/cred_helper"
 	. "autoscaler/api/publicapiserver"
+	"autoscaler/custom_metrics_cred_helper_plugin"
 	"autoscaler/db"
 	"autoscaler/fakes"
 	"autoscaler/models"
@@ -72,7 +73,7 @@ var _ = Describe("PublicApiHandler", func() {
 		pathVariables = map[string]string{}
 	})
 	JustBeforeEach(func() {
-		handler = NewPublicApiHandler(lagertest.NewTestLogger("public_api_handler"), conf, policydb, bindingdb, custom_metrics_cred_helper.NewWithPolicyDb(policydb, custom_metrics_cred_helper.MaxRetry))
+		handler = NewPublicApiHandler(lagertest.NewTestLogger("public_api_handler"), conf, policydb, bindingdb, custom_metrics_cred_helper_plugin.NewWithPolicyDb(policydb, cred_helper.MaxRetry))
 	})
 
 	Describe("GetInfo", func() {
