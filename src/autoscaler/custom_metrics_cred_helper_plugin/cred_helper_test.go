@@ -1,8 +1,8 @@
-package custom_metrics_cred_helper_test
+package custom_metrics_cred_helper_plugin_test
 
 import (
 	"autoscaler/api/cred_helper"
-	. "autoscaler/api/custom_metrics_cred_helper"
+	. "autoscaler/custom_metrics_cred_helper_plugin"
 	"database/sql"
 	"errors"
 

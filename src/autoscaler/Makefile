@@ -8,11 +8,15 @@ PACKAGE_DIRS := $(shell $(GO) list ./... | grep -v /vendor/ | grep -v e2e)
 CGO_ENABLED = 0
 BUILDTAGS :=
 
+build-custom-metrics-cred-helper-plugin:
+	@echo "# building custom-metrics-cred-helper-plugin"
+	@CGO_ENABLED=$(CGO_ENABLED) $(GO) build $(BUILDTAGS) $(BUILDFLAGS) -o build/custom-metrics-cred-helper-plugin custom_metrics_cred_helper_plugin/main.go
+
 build-%:
 	@echo "# building $*"
 	@CGO_ENABLED=$(CGO_ENABLED) $(GO) build $(BUILDTAGS) $(BUILDFLAGS) -o build/$* $*/cmd/$*/main.go
 
-build: build-scalingengine build-metricsforwarder build-eventgenerator build-api build-metricsgateway build-metricsserver build-operator
+build: build-scalingengine build-metricsforwarder build-eventgenerator build-api build-metricsgateway build-metricsserver build-operator build-custom-metrics-cred-helper-plugin
 
 check: fmt lint build test
 

@@ -1,7 +1,8 @@
 package main
 
 import (
-	"autoscaler/api/custom_metrics_cred_helper"
+	"autoscaler/api/cred_helper"
+	"autoscaler/custom_metrics_cred_helper_plugin"
 	"flag"
 	"fmt"
 	"os"
@@ -79,7 +80,7 @@ func main() {
 		logger.Error("failed to login cloud foundry", err, lager.Data{"API": conf.CF.API})
 		os.Exit(1)
 	}
-	credentials, err := custom_metrics_cred_helper.New(conf.DB.PolicyDB, logger.Session("policydb-db"), custom_metrics_cred_helper.MaxRetry)
+	credentials, err := custom_metrics_cred_helper_plugin.New(conf.DB.PolicyDB, logger.Session("policydb-db"), cred_helper.MaxRetry)
 	if err != nil {
 		logger.Error("failed to connect policy database", err, lager.Data{"dbConfig": conf.DB.PolicyDB})
 		os.Exit(1)

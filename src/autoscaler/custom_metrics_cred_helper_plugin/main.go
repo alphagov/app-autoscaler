@@ -1,4 +1,4 @@
-package custom_metrics_cred_helper
+package custom_metrics_cred_helper_plugin
 
 import (
 	"autoscaler/api/cred_helper"

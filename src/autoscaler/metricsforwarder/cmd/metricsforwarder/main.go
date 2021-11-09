@@ -1,7 +1,8 @@
 package main
 
 import (
-	"autoscaler/api/custom_metrics_cred_helper"
+	"autoscaler/api/cred_helper"
+	"autoscaler/custom_metrics_cred_helper_plugin"
 	"autoscaler/db"
 	"autoscaler/db/sqldb"
 	"autoscaler/healthendpoint"
@@ -63,7 +64,7 @@ func main() {
 	}
 	defer policyDB.Close()
 
-	credentials, err := custom_metrics_cred_helper.New(conf.Db.PolicyDb, logger.Session("policy-db"), custom_metrics_cred_helper.MaxRetry)
+	credentials, err := custom_metrics_cred_helper_plugin.New(conf.Db.PolicyDb, logger.Session("policy-db"), cred_helper.MaxRetry)
 	if err != nil {
 		logger.Error("failed-to-connect-policy-database", err, lager.Data{"dbConfig": conf.Db.PolicyDb})
 		os.Exit(1)
