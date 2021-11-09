@@ -2,10 +2,13 @@ package main
 
 import (
 	"autoscaler/api/cred_helper"
-	"autoscaler/custom_metrics_cred_helper_plugin"
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
+
+	"github.com/hashicorp/go-hclog"
+	"github.com/hashicorp/go-plugin"
 
 	"autoscaler/api"
 	"autoscaler/api/brokerserver"
@@ -82,7 +85,7 @@ func main() {
 	}
 
 	// FIXME load this as a plugin
-	credentials, err := custom_metrics_cred_helper_plugin.New(conf.DB.PolicyDB, logger.Session("policydb-db"), cred_helper.MaxRetry)
+	credentials, err := loadCredentialPlugin(conf.DB)
 	if err != nil {
 		logger.Error("failed to connect policy database", err, lager.Data{"dbConfig": conf.DB.PolicyDB})
 		os.Exit(1)
@@ -146,4 +149,49 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("exited")
+}
+
+func loadCredentialPlugin(dbconfig config.DBConfig) (cred_helper.Credentials, error) {
+	// FIXME
+	//custom_metrics_cred_helper_plugin.New(conf.DB.PolicyDB, logger.Session("policydb-db"), cred_helper.MaxRetry)
+
+	// Create an hclog.Logger
+	logger := hclog.New(&hclog.LoggerOptions{
+		Name:   "Plugin",
+		Output: os.Stdout,
+		Level:  hclog.Debug,
+	})
+
+	// We're a host! Start by launching the plugin process.
+	client := plugin.NewClient(&plugin.ClientConfig{
+		HandshakeConfig: cred_helper.HandshakeConfig,
+		Plugins:         pluginMap,
+		Cmd:             exec.Command("../cred_helper/customMetricsCredHelper"),
+		Logger:          logger,
+	})
+	defer client.Kill()
+
+	// Connect via RPC
+	rpcClient, err := client.Client()
+	if err != nil {
+		logger.Error("failed to create rpcClient", err)
+		return nil, fmt.Errorf("failed to create rpcClient %w", err)
+	}
+	// Request the plugin
+	raw, err := rpcClient.Dispense("customMetricsCredHelper")
+	if err != nil {
+		return nil, fmt.Errorf("failed to dispense plugin %w", err)
+	}
+	// We should have a customMetricsCredHelper now! This feels like a normal interface
+	// implementation but is in fact over an RPC connection.
+	credentials := raw.(cred_helper.Credentials)
+	//FIXME
+	//credentials.InitializeConfig(dbconfig)
+
+	return credentials, nil
+}
+
+// pluginMap is the map of plugins we can dispense.
+var pluginMap = map[string]plugin.Plugin{
+	"customMetricsCredHelper": &cred_helper.CredentialsPlugin{},
 }

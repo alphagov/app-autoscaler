@@ -1,6 +1,7 @@
 package cred_helper
 
 import (
+	"autoscaler/metricsforwarder/config"
 	"autoscaler/models"
 	"net/rpc"
 )
@@ -8,6 +9,10 @@ import (
 // Here is an implementation that talks over RPC
 type CredentialsRPC struct {
 	client *rpc.Client
+}
+
+func (g *CredentialsRPC) InitializeConfig(config config.DbConfig) error {
+	panic("implement me")
 }
 
 func (g *CredentialsRPC) Create(appId string, userProvidedCredential *models.Credential) (*models.Credential, error) {
