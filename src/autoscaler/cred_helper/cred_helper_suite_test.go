@@ -1,4 +1,4 @@
-package internal_test
+package cred_helper_test
 
 import (
 	. "github.com/onsi/ginkgo"

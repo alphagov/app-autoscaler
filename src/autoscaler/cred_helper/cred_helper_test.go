@@ -1,8 +1,7 @@
-package internal_test
+package cred_helper_test
 
 import (
-	"autoscaler/api/cred_helper"
-	"autoscaler/custom_metrics_cred_helper_plugin/internal"
+	"autoscaler/cred_helper"
 	"database/sql"
 	"errors"
 
@@ -26,7 +25,7 @@ var _ = Describe("CustomMetricCredHelper", func() {
 
 	BeforeEach(func() {
 		policyDB = &fakes.FakePolicyDB{}
-		creds = internal.NewWithPolicyDb(policyDB, internal.MaxRetry)
+		creds = cred_helper.NewWithPolicyDb(policyDB, cred_helper.MaxRetry)
 	})
 	Context("CreateCredential", func() {
 		var err error
@@ -67,7 +66,7 @@ var _ = Describe("CustomMetricCredHelper", func() {
 
 			})
 			It("should try MaxRetry times and return error", func() {
-				Expect(policyDB.SaveCredentialCallCount()).To(Equal(internal.MaxRetry))
+				Expect(policyDB.SaveCredentialCallCount()).To(Equal(cred_helper.MaxRetry))
 				Expect(credResult).To(BeNil())
 				Expect(err).To(HaveOccurred())
 			})
@@ -92,7 +91,7 @@ var _ = Describe("CustomMetricCredHelper", func() {
 				policyDB.DeleteCredentialReturns(errors.New("dberror"))
 			})
 			It("should try MaxRetry times and return error", func() {
-				Expect(policyDB.DeleteCredentialCallCount()).To(Equal(internal.MaxRetry))
+				Expect(policyDB.DeleteCredentialCallCount()).To(Equal(cred_helper.MaxRetry))
 				Expect(err).To(HaveOccurred())
 			})
 		})

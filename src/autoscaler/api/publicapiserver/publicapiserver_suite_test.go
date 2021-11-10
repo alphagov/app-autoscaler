@@ -1,8 +1,7 @@
 package publicapiserver_test
 
 import (
-	"autoscaler/api/cred_helper"
-	"autoscaler/custom_metrics_cred_helper_plugin"
+	"autoscaler/cred_helper"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -126,7 +125,7 @@ var _ = BeforeSuite(func() {
 	httpStatusCollector := &fakes.FakeHTTPStatusCollector{}
 	fakeRateLimiter = &fakes.FakeLimiter{}
 	httpServer, err := publicapiserver.NewPublicApiServer(lagertest.NewTestLogger("public_apiserver"), conf,
-		fakePolicyDB, custom_metrics_cred_helper_plugin.NewWithPolicyDb(fakePolicyDB, cred_helper.MaxRetry),
+		fakePolicyDB, cred_helper.NewWithPolicyDb(fakePolicyDB, cred_helper.MaxRetry),
 		checkBindingFunc, fakeCFClient, httpStatusCollector, fakeRateLimiter, nil)
 	Expect(err).NotTo(HaveOccurred())
 

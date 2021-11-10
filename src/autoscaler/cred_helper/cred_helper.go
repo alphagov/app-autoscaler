@@ -1,7 +1,6 @@
-package internal
+package cred_helper
 
 import (
-	"autoscaler/api/cred_helper"
 	"autoscaler/db"
 	"autoscaler/db/sqldb"
 	"autoscaler/helpers"
@@ -11,57 +10,45 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	MaxRetry = 5
-)
-
-type Credentials struct {
+type credentials struct {
 	policyDB db.PolicyDB
 	maxRetry int
 }
 
-func NewWithPolicyDb(policyDb db.PolicyDB, maxRetry int) cred_helper.Credentials {
-	return &Credentials{
+var _ Credentials = &credentials{}
+
+func New() Credentials {
+	return &credentials{}
+}
+
+func NewWithPolicyDb(policyDb db.PolicyDB, maxRetry int) Credentials {
+	return &credentials{
 		policyDB: policyDb,
 		maxRetry: maxRetry,
 	}
 }
 
-func (c *Credentials) Create(args cred_helper.CreateArgs, reply *models.Credential) error {
-	r, err := createCredential(args.AppId, args.UserProvidedCredential, c.policyDB, c.maxRetry)
-	if err != nil {
-		return err
-	}
-	reply.Username = r.Username
-	reply.Password = r.Password
-	return nil
+func (c *credentials) Create(appId string, userProvidedCredential *models.Credential) (*models.Credential, error) {
+	return createCredential(appId, userProvidedCredential, c.policyDB, c.maxRetry)
 }
 
-func (c *Credentials) Delete(appId string, _ *interface{}) error {
+func (c *credentials) Delete(appId string) error {
 	return deleteCredential(appId, c.policyDB, c.maxRetry)
 }
 
-func (c *Credentials) Get(appId string, reply *models.Credential) error {
-	r, err := c.policyDB.GetCredential(appId)
-	if err != nil {
-		return err
-	}
-	reply.Username = r.Username
-	reply.Password = r.Password
-	return nil
+func (c *credentials) Get(appId string) (*models.Credential, error) {
+	return c.policyDB.GetCredential(appId)
 }
 
-func (c *Credentials) InitializeConfig(args cred_helper.InitializeConfigArgs, _ *interface{}) error {
-	logger := helpers.InitLoggerFromConfig(&args.LoggingConfig, "custom_metrics_cred_helper")
+func (c *credentials) InitializeConfig(dbConfig map[string]db.DatabaseConfig, loggingConfig helpers.LoggingConfig) error {
+	logger := helpers.InitLoggerFromConfig(&loggingConfig, "custom_metrics_cred_helper")
 	var err error
-	c.policyDB, err = sqldb.NewPolicySQLDB(args.DbConfig["policy_db"], logger.Session("policy-db"))
+	c.policyDB, err = sqldb.NewPolicySQLDB(dbConfig["policy_db"], logger.Session("policy-db"))
 	if err != nil {
 		return err
 	}
 	return nil
 }
-
-var _ cred_helper.Credentials = &Credentials{}
 
 func _createCredential(appId string, userProvidedCredential *models.Credential, policyDB db.PolicyDB) (*models.Credential, error) {
 	var credUsername, credPassword string

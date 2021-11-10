@@ -1,8 +1,7 @@
 package main
 
 import (
-	"autoscaler/api/cred_helper"
-	"autoscaler/custom_metrics_cred_helper_plugin/internal"
+	"autoscaler/cred_helper"
 
 	"github.com/hashicorp/go-plugin"
 )
@@ -11,7 +10,7 @@ func main() {
 	plugin.Serve(&plugin.ServeConfig{
 		HandshakeConfig: cred_helper.HandshakeConfig,
 		Plugins: map[string]plugin.Plugin{
-			"credHelper": &cred_helper.CredentialsPlugin{Impl: &internal.Credentials{}},
+			"credHelper": &cred_helper.CredentialsPlugin{Impl: cred_helper.New()},
 		},
 
 		// A non-nil value here enables gRPC serving for this plugin...

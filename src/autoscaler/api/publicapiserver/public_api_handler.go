@@ -1,7 +1,7 @@
 package publicapiserver
 
 import (
-	"autoscaler/api/cred_helper"
+	"autoscaler/cred_helper"
 	"bytes"
 	"encoding/json"
 	"io/ioutil"
@@ -433,8 +433,7 @@ func (h *PublicApiHandler) CreateCredential(w http.ResponseWriter, r *http.Reque
 	}
 
 	h.logger.Info("Create credential", lager.Data{"appId": appId})
-	cred := &models.Credential{}
-	err = h.credentials.Create(cred_helper.CreateArgs{AppId: appId, UserProvidedCredential: userProvidedCredential}, cred)
+	cred, err := h.credentials.Create(appId, userProvidedCredential)
 	if err != nil {
 		h.logger.Error("Failed to create credential", err, lager.Data{"appId": appId})
 		writeErrorResponse(w, http.StatusInternalServerError, "Error creating credential")
@@ -460,7 +459,7 @@ func (h *PublicApiHandler) DeleteCredential(w http.ResponseWriter, _ *http.Reque
 	}
 
 	h.logger.Info("Delete credential", lager.Data{"appId": appId})
-	err := h.credentials.Delete(appId, new(interface{}))
+	err := h.credentials.Delete(appId)
 	if err != nil {
 		h.logger.Error("Failed to delete credential", err, lager.Data{"appId": appId})
 		writeErrorResponse(w, http.StatusInternalServerError, "Error deleting credential")

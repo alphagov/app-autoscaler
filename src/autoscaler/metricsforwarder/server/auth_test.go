@@ -1,8 +1,7 @@
 package server_test
 
 import (
-	"autoscaler/api/cred_helper"
-	"autoscaler/custom_metrics_cred_helper_plugin"
+	"autoscaler/cred_helper"
 	"autoscaler/fakes"
 	"autoscaler/metricsforwarder/config"
 	"autoscaler/metricsforwarder/server/auth"
@@ -55,7 +54,7 @@ var _ = Describe("Authentication", func() {
 	JustBeforeEach(func() {
 		logger := lager.NewLogger("auth-test")
 		var err error
-		authTest, err = auth.New(logger, custom_metrics_cred_helper_plugin.NewWithPolicyDb(policyDB, cred_helper.MaxRetry), credentialCache, 10*time.Minute, metricsForwarderMtlsConfig.TLS.CACertFile)
+		authTest, err = auth.New(logger, cred_helper.NewWithPolicyDb(policyDB, cred_helper.MaxRetry), credentialCache, 10*time.Minute, metricsForwarderMtlsConfig.TLS.CACertFile)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -199,7 +198,7 @@ var _ = Describe("Authentication", func() {
 		Context("The Ca instance cert has no pems but is not empty", func() {
 			const emptyCert = "../../../../test-certs/empty-mtls-local-ca.crt"
 			It("Creation should faile with NoCaCerts Error", func() {
-				_, err := auth.New(lager.NewLogger("auth-test"), custom_metrics_cred_helper_plugin.NewWithPolicyDb(policyDB, cred_helper.MaxRetry), credentialCache, 10*time.Minute, emptyCert)
+				_, err := auth.New(lager.NewLogger("auth-test"), cred_helper.NewWithPolicyDb(policyDB, cred_helper.MaxRetry), credentialCache, 10*time.Minute, emptyCert)
 				Expect(errors.Is(err, auth.ErrCAFileEmpty)).To(BeTrue())
 			})
 		})

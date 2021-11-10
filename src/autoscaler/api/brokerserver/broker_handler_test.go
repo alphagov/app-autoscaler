@@ -2,6 +2,7 @@ package brokerserver_test
 
 import (
 	. "autoscaler/api/brokerserver"
+	"autoscaler/cred_helper"
 	"autoscaler/db"
 	"autoscaler/fakes"
 	"autoscaler/models"
@@ -29,10 +30,9 @@ import (
 
 var _ = Describe("BrokerHandler", func() {
 	var (
-		fakecfClient    *fakes.FakeCFClient
-		bindingdb       *fakes.FakeBindingDB
-		policydb        *fakes.FakePolicyDB
-		fakeCredentials *fakes.FakeCredentials
+		fakecfClient *fakes.FakeCFClient
+		bindingdb    *fakes.FakeBindingDB
+		policydb     *fakes.FakePolicyDB
 
 		handler *BrokerHandler
 		resp    *httptest.ResponseRecorder
@@ -44,7 +44,6 @@ var _ = Describe("BrokerHandler", func() {
 		resp = httptest.NewRecorder()
 		installQuotaAPIHandlers()
 		fakecfClient = &fakes.FakeCFClient{}
-		fakeCredentials = &fakes.FakeCredentials{}
 	})
 
 	JustBeforeEach(func() {
@@ -55,7 +54,7 @@ var _ = Describe("BrokerHandler", func() {
 				ID:   "a-plan-id",
 				Name: "standard",
 			}},
-		}}, fakecfClient, fakeCredentials)
+		}}, fakecfClient, cred_helper.NewWithPolicyDb(policydb, cred_helper.MaxRetry))
 	})
 
 	Describe("GetBrokerCatalog", func() {
