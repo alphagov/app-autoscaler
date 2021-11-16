@@ -129,6 +129,10 @@ openssl x509 -req -in "${depot_path}"/validmtls_client-2.csr -CA "${depot_path}"
 openssl  req -new -newkey rsa:2048  -nodes -subj "/CN=sap.com/O=SAP SE/OU=organization:AB1234ORG/OU=app:an-app-id/OU=space:AB1234SPACE" -out "${depot_path}"/invalidmtls_client.csr
 openssl x509 -req -in "${depot_path}"/invalidmtls_client.csr -CA "${depot_path}"/invalid-mtls-local-ca.crt -CAkey "${depot_path}"/invalid-mtls-local-ca.key -CAcreateserial -out "${depot_path}"/invalidmtls_client.crt -days 365 -sha256
 
+## Multiple client certificate
+cat "${depot_path}"/invalidmtls_client.csr > "${depot_path}"/validmtls_multiple_client.csr
+cat "${depot_path}"/validmtls_client-1.csr >> "${depot_path}"/validmtls_multiple_client.csr
+
 ## unsigned certificate
 openssl  req -x509 -new -newkey rsa:2048  -nodes -subj "/CN=sap.com/O=SAP SE/OU=organization:AB1234ORG/OU=app:an-app-id/OU=space:AB1234SPACE" -out "${depot_path}"/nosignmtls_client.crt
 #

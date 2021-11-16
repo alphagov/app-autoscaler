@@ -179,6 +179,26 @@ var _ = Describe("Authentication", func() {
 			})
 		})
 
+		Context("correct xfcc header with correct CA is supplied for multiple client certs", func() {
+			const validMultipleClientCert= "../../../../test-certs/validmtls_multiple_client.csr"
+
+			FIt("should call next handler", func() {
+				req = CreateRequest(body)
+				req.Header.Add("X-Forwarded-Client-Cert", MustReadXFCCcert(validMultipleClientCert))
+				vars["appid"] = "an-app-id"
+				nextCalled := 0
+				nextFunc := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					nextCalled = nextCalled + 1
+				})
+
+				authTest.AuthenticateHandler(nextFunc)(resp, req, vars)
+
+				Expect(policyDB.GetCredentialCallCount()).To(Equal(0))
+				Expect(resp.Code).To(Equal(http.StatusOK))
+				Expect(nextCalled).To(Equal(1))
+			})
+		})
+
 		Context("correct xfcc header with correct CA is supplied for cert 2", func() {
 			It("should call next handler", func() {
 				req = CreateRequest(body)
